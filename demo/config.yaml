@@ -1,0 +1,143 @@
+api:
+  base_url: "http://localhost:8000"
+  openapi_spec: "http://localhost:8000/openapi.json"
+
+defaults:
+  - All endpoints are accessible unless otherwise protected.
+  - User IDs are UUIDs.
+  - Token `secrettoken` is valid when used in the `x-token` header.
+  - Assume a clean database state unless stated.
+  - If you need a user_id, create a user first or use the one from the previous step if applicable.
+  - Dynamic variables need to be resolved before use so try to plan accordingly when creating the list of actions in the flow.
+
+collections:
+  user_management:
+    description: "Basic user CRUD operations."
+    flows:
+      - create_and_delete_user
+      - delete_nonexistent_user
+      - batch_user_operations
+
+  user_search:
+    description: "Searching users via filters."
+    flows:
+      - search_user_by_name_city
+
+  validation:
+    description: "Tests for invalid or missing inputs."
+    flows:
+      - invalid_email_update
+      - missing_required_fields
+
+  user_deactivation:
+    description: "Soft deletion and user status updates."
+    flows:
+      - deactivate_user
+
+  user_tags:
+    description: "Operations for tagging users."
+    flows:
+      - tag_user
+
+  user_stats:
+    description: "Aggregated metrics about users."
+    flows:
+      - fetch_user_stats
+
+  security:
+    description: "Access control with and without authentication."
+    flows:
+      - access_profile_without_auth
+      - access_without_token
+      - access_with_valid_token
+
+flows:
+  create_and_delete_user:
+    description: |
+      Use POST /users to create a user. Retrieve the user with GET, then delete the user.
+    expectations: |
+      Each step should return 2xx on success. Final DELETE should return 204.
+    notes: |
+      - Use a valid user object for creation.
+      - Resolve {user_id} from the POST response.
+      - Ensure the user is deleted successfully.
+
+  delete_nonexistent_user:
+    description: |
+      Attempt to delete a user using a random non-existent UUID with DELETE /users/{user_id}.
+    expectations: |
+      Should return 404 Not Found with a meaningful error message.
+    notes: |
+      - Use a UUID that is not part of the system to simulate this case.
+
+  batch_user_operations:
+    description: |
+      Use POST /batch to create multiple users, GET /users to retrieve them, and DELETE one of the user using by user_id.
+    expectations: |
+      All steps should succeed with 2xx responses.
+    notes: |
+      Resolve {user_id} using one of the returned users from the batch response.
+
+  search_user_by_name_city:
+    description: |
+      Use GET /search with query parameters for name and city using the user created in the first step.
+    expectations: |
+      Should return the user created in the first step with 200 OK.
+    notes: |
+      - Create a user with POST to /users first to ensure there is data to search.
+
+  invalid_email_update:
+    description: |
+      Retrieve users using GET /users, then update one using PATCH /users/{user_id} with an invalid email format.
+    expectations: |
+      Should return 400 or 422 with a validation error message.
+    notes: |
+      Use a valid user ID from the list and patch with invalid email (e.g., "bademail").
+
+  missing_required_fields:
+    description: |
+      Create a user via POST /users while omitting required fields like `email`.
+    expectations: |
+      Should return 400 or 422 with a clear validation error message.
+
+  deactivate_user:
+    description: |
+      Create a user, then PATCH to /users/{user_id}/deactivate to set the user as inactive.
+    expectations: |
+      Should return the updated user with the user's tag attribute includes "inactive".
+    notes: |
+      Resolve {user_id} from the user created in the first step.
+
+  tag_user:
+    description: |
+      Create a user, then add tags using PATCH /users/{user_id}/tags.
+    expectations: |
+      Should return 2xx success and the user should have the updated tags.
+    notes: |
+      Resolve {user_id} using the result of the POST /users call.
+
+  fetch_user_stats:
+    description: |
+      Create multiple users using POST /batch, then call GET /stats to retrieve a summary.
+    expectations: |
+      Should return stats including user count and tag breakdowns.
+
+  access_profile_without_auth:
+    description: |
+      Create a user, then attempt to access their profile via GET /login/{user_id}/profile without authentication.
+    expectations: |
+      Should return 200 OK.
+    notes: |
+      Resolve {user_id} from the POST /users response.
+
+  access_without_token:
+    description: |
+      Create a user, then call GET /login without setting the `x-token` header.
+    expectations: |
+      Should return 401 Unauthorized.
+
+  access_with_valid_token:
+    description: |
+      Create a user, then call GET /login with a valid `x-token` header secrettoken.
+    expectations: |
+      Should return 200 OK with user info or message.
