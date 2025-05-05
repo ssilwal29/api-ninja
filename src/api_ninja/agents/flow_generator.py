@@ -83,8 +83,6 @@ Constraints:
                 collection_name = method.lower() + path.replace("/", "_").replace(
                     "{", ""
                 ).replace("}", "")
-                # if collection_name != "post_users":
-                #     continue
                 if method.lower() not in {"get", "post", "put", "patch", "delete"}:
                     continue
                 print(f"Generating flows for {method.upper()} {path}...")

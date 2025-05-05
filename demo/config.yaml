@@ -1,7 +1,3 @@
-api:
-  base_url: "http://localhost:8000"
-  openapi_spec: "http://localhost:8000/openapi.json"
-
 defaults:
   - All endpoints are accessible unless otherwise protected.
   - User IDs are UUIDs.

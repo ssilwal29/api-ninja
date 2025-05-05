@@ -51,27 +51,39 @@ def collect_flows(cfg: dict) -> dict[str, dict]:
 def cli(ctx):
     """🧪 APINinja CLI"""
     pass
-    # cfg = load_config(config)
-    # spec = {}
-    # if cfg.get("api", {}).get("openapi_spec"):
-    #     spec = requests.get(cfg["api"]["openapi_spec"]).json()
-    # ninja = APINinja(openapi_spec=spec, api_base_url=cfg["api"]["base_url"])
-    # flows = collect_flows(cfg)
-    # ctx.obj = {"ninja": ninja, "flows": flows}
 
 
 @cli.command("run-all")
 @click.option("-c", "--config", default="config.yaml", help="Path to config.yaml")
+@click.option("--openapi-spec-url", help="URL to fetch OpenAPI spec from")
+@click.option(
+    "--openapi-spec-path",
+    type=click.Path(exists=True),
+    help="Path to local OpenAPI JSON/YAML file",
+)
+@click.option(
+    "--base-url",
+    help="Base URL for the API (overrides config.yaml)",
+)
 @click.pass_context
-def run_all(ctx, config):
-    """
-    Run all flows defined in config.yaml...
-    """
+def run_all(ctx, config, openapi_spec_url, openapi_spec_path, base_url):
+    if not openapi_spec_url and not openapi_spec_path:
+        raise click.UsageError(
+            "Either --openapi-spec-url or --openapi-spec-path must be provided"
+        )
+    if not base_url:
+        raise click.UsageError("Base URL must be provided using --base-url")
     cfg = load_config(config)
     spec = {}
-    if cfg.get("api", {}).get("openapi_spec"):
-        spec = requests.get(cfg["api"]["openapi_spec"]).json()
-    ninja = APINinja(openapi_spec=spec, api_base_url=cfg["api"]["base_url"])
+    if openapi_spec_url:
+        spec = requests.get(openapi_spec_url).json()
+    if openapi_spec_path:
+        with open(openapi_spec_path, "r") as f:
+            if openapi_spec_path.endswith(".json"):
+                spec = json.load(f)
+            else:
+                spec = yaml.safe_load(f)
+    ninja = APINinja(openapi_spec=spec, api_base_url=base_url)
     flows = collect_flows(cfg)
     ctx.obj = {"ninja": ninja, "flows": flows}
 
@@ -184,17 +196,6 @@ def generate_flows(ctx, url, path, out):
 
     agent = FlowGeneratorAgent()
     flows = agent.generate_flows_for_spec(openapi_spec)
-    # flows_json = [flow.model_dump() for flow in flows]
-    # flows_restuructured = {}
-    # for flow in flows_json:
-    #     flow_dict = {}
-    #     flow_dict[flow["id"]] = {
-    #         "description": flow["description"],
-    #         "expectations": flow.get("expectations", ""),
-    #         "notes": flow.get("notes", ""),
-    #     }
-    #     flows_restuructured.update(flow_dict)
-    # flow_output = {"flows": flows_restuructured}
     print(f"Writing generated flows to {out}...")
     with open(out, "w") as f:
         yaml.dump(flows, f, indent=2)

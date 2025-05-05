@@ -6,10 +6,6 @@ class MemoryStore:
         self.context_str = ""
 
     def store(self, obj, label: str = None):
-        """
-        Append any object into the context string. Dicts/lists are JSON serialized.
-        Optionally include a label before the content.
-        """
         if isinstance(obj, (dict, list)):
             text = json.dumps(obj, indent=2)
         else:

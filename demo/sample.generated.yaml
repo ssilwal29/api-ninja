@@ -1,0 +1,545 @@
+api:
+  base_url: "http://localhost:8000"
+  openapi_spec: "http://localhost:8000/openapi.json"
+
+defaults:
+  - All endpoints are accessible unless otherwise protected.
+  - User IDs are UUIDs.
+  - Token `secrettoken` is valid when used in the `x-token` header.
+  - Assume a clean database state unless stated.
+  - If you need a user_id, create a user first or use the one from the previous step if applicable.
+  - Dynamic variables need to be resolved before use so try to plan accordingly when creating the list of actions in the flow.
+
+collections:
+  delete_users_user_id:
+    description: Flows for DELETE /users/{user_id}
+    flows:
+    - delete_users_happy_path
+    - delete_users_error_handling
+    - delete_users_authentication
+    - delete_users_boundary_value
+    - delete_users_schema_validation
+  get_items_:
+    description: Flows for GET /items/
+    flows:
+    - get_items_happy_path
+    - get_items_error_handling
+    - get_items_authentication
+    - get_items_boundary_value
+    - get_items_schema_validation
+  get_login_:
+    description: Flows for GET /login/
+    flows:
+    - get_login_happy_path
+    - get_login_error_handling
+    - get_login_authentication
+    - get_login_boundary_value
+    - get_login_schema_validation
+  get_search:
+    description: Flows for GET /search
+    flows:
+    - get_search_happy_path
+    - get_search_error_handling
+    - get_search_boundary_value
+    - get_search_schema_validation
+  get_stats:
+    description: Flows for GET /stats
+    flows:
+    - get_stats_happy_path
+    - get_stats_error_handling
+    - get_stats_authentication
+    - get_stats_boundary_value
+    - get_stats_schema_validation
+  get_users:
+    description: Flows for GET /users
+    flows:
+    - get_users_happy_path
+    - get_users_error_handling
+    - get_users_authentication
+    - get_users_boundary_value
+    - get_users_schema_validation
+  get_users_user_id:
+    description: Flows for GET /users/{user_id}
+    flows:
+    - get_users_user_id_happy_path
+    - get_users_user_id_error_handling
+    - get_users_user_id_authentication
+    - get_users_user_id_boundary_value
+    - get_users_user_id_schema_validation
+  patch_users_user_id_deactivate:
+    description: Flows for PATCH /users/{user_id}/deactivate
+    flows:
+    - patch_users_user_id_deactivate_happy_path
+    - patch_users_user_id_deactivate_error_handling
+    - patch_users_user_id_deactivate_boundary_value
+    - patch_users_user_id_deactivate_schema_validation
+  post_batch:
+    description: Flows for POST /batch
+    flows:
+    - post_batch_happy_path
+    - post_batch_error_handling
+    - post_batch_boundary_value
+    - post_batch_schema_validation
+  post_login_user_id_profile:
+    description: Flows for POST /login/{user_id}/profile
+    flows:
+    - post_login_userid_profile_happy_path
+    - post_login_userid_profile_error_handling
+    - post_login_userid_profile_boundary_value
+    - post_login_userid_profile_schema_validation
+  post_users:
+    description: Flows for POST /users
+    flows:
+    - post_users_happy_path
+    - post_users_error_handling
+    - post_users_boundary_value
+    - post_users_schema_validation
+    - post_users_create_and_delete
+  post_users_user_id_tags:
+    description: Flows for POST /users/{user_id}/tags
+    flows:
+    - post_users_user_id_tags_happy_path
+    - post_users_user_id_tags_error_handling
+    - post_users_user_id_tags_boundary_value
+    - post_users_user_id_tags_schema_validation
+  put_users_user_id:
+    description: Flows for PUT /users/{user_id}
+    flows:
+    - put_users_user_id_happy_path
+    - put_users_user_id_error_handling
+    - put_users_user_id_authentication
+    - put_users_user_id_boundary_value
+    - put_users_user_id_schema_validation
+flows:
+  delete_users_authentication:
+    description: Since there's no specified authentication in the OpenAPI spec for
+      'DELETE /users/{user_id}', this test flow is not applicable.
+    expectations: ''
+    notes: This flow is not generated as there's no authentication required.
+  delete_users_boundary_value:
+    description: Attempt to delete a user using 'DELETE /users/{user_id}' with a user_id
+      at the boundary, such as a very short or very long string.
+    expectations: 422 Validation Error
+    notes: Test boundary conditions for the user_id parameter. No authentication needed.
+  delete_users_error_handling:
+    description: Attempt to delete a user by calling 'DELETE /users/{user_id}' with
+      a non-existent user_id or empty string as user_id.
+    expectations: 422 Validation Error
+    notes: Check for client-side errors if the user does not exist.
+  delete_users_happy_path:
+    description: First, create a user using the 'POST /users' endpoint with valid
+      data. Capture the user_id from the response. Then, call 'DELETE /users/{user_id}'
+      with the captured user_id to delete the user.
+    expectations: 204 No Content
+    notes: Ensure the user exists before deletion. No authentication required.
+  delete_users_schema_validation:
+    description: Perform a schema validation test by calling 'DELETE /users/{user_id}'
+      with an incorrect data type for the user_id, such as an integer instead of a
+      string.
+    expectations: 422 Validation Error
+    notes: The user_id should be a string, and validation errors should occur if it's
+      not. No authentication required.
+  get_items_authentication:
+    description: There is no explicit mention of authentication required for the /items/
+      endpoint in the OpenAPI specification. Therefore, authentication scenarios are
+      not applicable for this test.
+    expectations: N/A
+    notes: This endpoint does not specify authentication requirements, so no authentication
+      flow is necessary.
+  get_items_boundary_value:
+    description: Since the /items/ endpoint has a 'user-agent' header field which
+      is optional, test the boundary condition by sending a GET request with an extremely
+      long 'user-agent' string to check if the endpoint handles it gracefully.
+    expectations: The API should still return a 200 OK response if it handles long
+      strings properly, or a 422 Validation Error if it does not.
+    notes: Ensure the provided 'user-agent' string is significantly longer than typical
+      use cases to check boundary handling.
+  get_items_error_handling:
+    description: Send a GET request to the /items/ endpoint with an incorrect header
+      value. For instance, set 'user-agent' to a number instead of a string. This
+      should test the API's validation logic.
+    expectations: The API should return a 422 Validation Error response due to the
+      incorrect 'user-agent' header value type.
+    notes: Check the OpenAPI spec for validation error details to ensure it aligns
+      with the expected response structure.
+  get_items_happy_path:
+    description: Send a GET request to /items/ endpoint without any additional parameters
+      or headers. This will test whether the endpoint returns a successful response
+      with the default behavior.
+    expectations: The API should return a 200 OK response with a list of items in
+      the body.
+    notes: Ensure no additional headers or parameters are provided, especially since
+      none are required.
+  get_items_schema_validation:
+    description: Send a request to the /items/ endpoint with a valid 'user-agent'
+      header and check the response structure against the OpenAPI schema to ensure
+      all fields are correctly returned according to the defined schema.
+    expectations: The API should return a 200 OK response with the response body matching
+      the schema's structure.
+    notes: Use JSON schema validation to confirm that the response adheres to the
+      defined structure in the OpenAPI spec.
+  get_login_authentication:
+    description: Test the /login endpoint by sending a GET request with an invalid
+      x-token header.
+    expectations: The API should return a 422 Validation Error indicating that the
+      token is invalid or unauthorized.
+    notes: Use an intentionally incorrect x-token value. This tests token validation
+      logic.
+  get_login_boundary_value:
+    description: Test the /login endpoint with an extremely long x-token to check
+      how the system handles boundary value cases.
+    expectations: The API should handle the request gracefully without exceptions,
+      returning a 422 Validation Error if the token is invalid.
+    notes: Use a very long string for x-token to test the system's ability to handle
+      unexpected input sizes.
+  get_login_error_handling:
+    description: Test the /login endpoint without sending the required x-token header
+      to simulate unauthorized access.
+    expectations: The API should return a 422 Validation Error since the x-token is
+      missing.
+    notes: This tests the required header handling. The response should indicate a
+      missing or invalid token.
+  get_login_happy_path:
+    description: Test the /login endpoint by sending a GET request with a valid x-token
+      header to retrieve protected information.
+    expectations: The API should return a 200 OK with the protected information in
+      the response body.
+    notes: Ensure the x-token used is valid. Check the response content for correct
+      schema.
+  get_login_schema_validation:
+    description: Send a GET request to the /login endpoint with a correctly formatted
+      x-token to ensure response adherence to expected schema.
+    expectations: The response should be 200 OK with content matching the expected
+      response schema.
+    notes: Validate the response against the OpenAPI schema. Check all required fields
+      are present and correctly formatted.
+  get_search_boundary_value:
+    description: Test boundary values by making a GET request to `/search` with long
+      string values for `name` and `city`.
+    expectations: The API should return 200 OK with an empty array if there are no
+      users matching the criteria.
+    notes: Use realistic long string values to test the API's handling of large data.
+      Ensure no truncation or errors occur.
+  get_search_error_handling:
+    description: Test error handling by making a GET request to `/search` without
+      any query parameters.
+    expectations: The API should return 200 OK with a JSON array, possibly empty,
+      as there is no requirement for query parameters.
+    notes: Even with missing parameters, the API should handle it gracefully without
+      an error. No auth required.
+  get_search_happy_path:
+    description: Test the happy path by making a GET request to `/search` with valid
+      query parameters `name` and `city`.
+    expectations: The API should return 200 OK with a JSON array of users matching
+      the query parameters.
+    notes: Ensure that the names and cities used exist in the database to receive
+      a non-empty response. This does not require authentication.
+  get_search_schema_validation:
+    description: Test schema validation by making a GET request to `/search` with
+      an unexpected data type, such as an integer instead of a string, for the `name`
+      parameter.
+    expectations: The API should return a 422 Validation Error as the `name` is expected
+      to be a string.
+    notes: Schema validation should be enforced in the API to ensure data integrity.
+      This does not require authentication.
+  get_stats_authentication:
+    description: There is no indication of authentication requirements for the /stats
+      endpoint based on the OpenAPI spec, so no authentication test flow is provided.
+    expectations: N/A
+    notes: Authentication is not implemented; hence, this test is not applicable.
+  get_stats_boundary_value:
+    description: Test not applicable for a GET request to /stats as no input parameters
+      are specified that would involve boundary values.
+    expectations: N/A
+    notes: Since no query parameters are involved, boundary value testing is not applicable.
+  get_stats_error_handling:
+    description: Send a malformed GET request to the /stats endpoint. An example is
+      to include a random query parameter that the endpoint does not expect, such
+      as ?count=abc.
+    expectations: The API should return a 200 OK response, as the endpoint does not
+      specify any required query parameters. The additional parameter should be ignored.
+    notes: Testing robustness against unexpected query parameters, ensuring that they
+      don't affect the happy path flow.
+  get_stats_happy_path:
+    description: Send a GET request to the /stats endpoint to retrieve user statistics.
+      No authentication or parameters are needed for this endpoint based on the specification.
+    expectations: The API should return a 200 OK response with the statistics in the
+      expected format.
+    notes: There are no additional requirements such as headers or payloads. The response
+      format is not explicitly defined, so a valid JSON response is expected.
+  get_stats_schema_validation:
+    description: Send a request to the /stats endpoint and validate the structure
+      of the returned JSON against the expected schema, if defined, or ensure it's
+      a valid JSON.
+    expectations: The API should respond with a well-formed JSON consistent with any
+      schema if defined in backend logic.
+    notes: The OpenAPI specification provides no detailed schema for the response,
+      but the response should be a valid JSON.
+  get_users_authentication:
+    description: This endpoint does not require authentication, so this flow is not
+      applicable based on the current OpenAPI spec.
+    expectations: N/A
+    notes: N/A
+  get_users_boundary_value:
+    description: Although the GET /users endpoint does not take in any input parameters,
+      perform the test by querying the endpoint with the understanding of checking
+      how the system handles large or no data. Consider using another endpoint that
+      takes input for boundary testing, like /users?limit=-1.
+    expectations: The API should handle large or zero values gracefully, potentially
+      returning an empty array or an error if large values are unsupported.
+    notes: No parameters for this endpoint, consider boundary testing on related endpoints.
+  get_users_error_handling:
+    description: Alter the request to simulate a client-side error. For instance,
+      you could change the request method to POST or modify the URL to one not defined,
+      like /user.
+    expectations: The API should return a 404 Not Found or a 405 Method Not Allowed
+      error, depending on how the server handles such requests.
+    notes: Understand how the API behaves with unsupported HTTP methods or incorrect
+      paths.
+  get_users_happy_path:
+    description: Call the GET /users endpoint to retrieve a list of users. No parameters
+      are required for this flow.
+    expectations: The API should return a 200 OK response with an array of user objects.
+    notes: Ensure the API correctly returns user details as per the schema.
+  get_users_schema_validation:
+    description: Verify the output schema by running GET /users and matching the response
+      against the predefined user schema.
+    expectations: The response should be an array of users, each conforming to the
+      'User' schema defined in components schemas.
+    notes: Ensure any optional fields are handled correctly, and all required user
+      fields are present in the schema.
+  get_users_user_id_authentication:
+    description: Perform a GET request to /users/{user_id} without any authentication
+      tokens or headers. This tests how the endpoint behaves when it's accessed without
+      authentication when the API generally requires it.
+    expectations: Return 200 OK or some form of error depending on API's free accessibility
+      settings.
+    notes: The OpenAPI spec doesn't mention authentication for /users/{user_id}, but
+      checking default behavior for unauthenticated requests can be useful.
+  get_users_user_id_boundary_value:
+    description: Test the endpoint with edge case user IDs such as a very long string.
+      Generate an ID near maximum allowed length if specified, or use excessively
+      large strings to check limit handling.
+    expectations: Return 422 Validation Error or process gracefully based on API limits.
+      No successful retrieval is expected.
+    notes: Ensure boundary tests consider limits typically applied to identifiers
+      in similar services, even if not explicitly defined in the OpenAPI spec.
+  get_users_user_id_error_handling:
+    description: Perform a GET request to /users/{user_id} with an invalid or non-existent
+      user ID. Use an obviously malformed ID like 'invalid-id'. No prior user creation
+      step is needed because the user ID is invalid.
+    expectations: Return 422 Validation Error with error details indicating the user
+      ID is invalid or not found.
+    notes: Focus on testing the response to invalid user IDs, no authentication is
+      required.
+  get_users_user_id_happy_path:
+    description: Perform a GET request to /users/{user_id} with a valid user ID. First,
+      create a user using POST /users to get a valid user ID, then retrieve that user
+      ID with GET /users/{user_id}.
+    expectations: Return 200 OK with the correct user data as a JSON object.
+    notes: Ensure the user ID exists before performing this test. No authentication
+      is required.
+  get_users_user_id_schema_validation:
+    description: Perform a GET request to /users/{user_id} with a valid user ID, then
+      verify that all fields in the response match the expected schema defined in
+      the OpenAPI spec.
+    expectations: Return 200 OK with a JSON object matching the 'User' schema, including
+      all required fields and types.
+    notes: Verify against the 'User' schema from the OpenAPI spec, ensuring types
+      and structure are correct.
+  patch_users_user_id_deactivate_boundary_value:
+    description: Create a user and then attempt to deactivate the user using the PATCH
+      /users/{user_id}/deactivate endpoint with boundary values for user_id, such
+      as an empty string or maximum length string beyond typical user_id length.
+    expectations: 422 Validation Error due to invalid user_id inputs.
+    notes: Ensure to check bounds based on what the typical user_id length is expected
+      to be.
+  patch_users_user_id_deactivate_error_handling:
+    description: Attempt to deactivate a user by using the PATCH /users/{user_id}/deactivate
+      endpoint with an invalid user_id (e.g., a user_id that doesn't exist or is improperly
+      formatted).
+    expectations: 422 Validation Error indicating the user_id is invalid or not found.
+    notes: Focus only on client-side errors such as invalid user_id formatting or
+      non-existent user_id.
+  patch_users_user_id_deactivate_happy_path:
+    description: Create a user using the POST /users endpoint. Capture the user_id
+      from the response. Use the PATCH /users/{user_id}/deactivate endpoint with the
+      captured user_id to deactivate the user.
+    expectations: 200 OK with the updated user details indicating the user is deactivated.
+    notes: Ensure the user_id is valid and exists in the database before deactivation.
+  patch_users_user_id_deactivate_schema_validation:
+    description: Deactivate a valid user using the PATCH /users/{user_id}/deactivate
+      endpoint. Validate the returned JSON schema against the expected response schema
+      to ensure compliance.
+    expectations: 200 OK with a response matching the 'User' schema defined in the
+      OpenAPI spec.
+    notes: Check all expected fields in the response are present and correctly formatted
+      according to the schema.
+  post_batch_boundary_value:
+    description: Test the age boundary by sending a POST request to the /batch endpoint
+      with a user object having an age value at its upper limit (129) and lower limit
+      (0).
+    expectations: The API should return 200 OK with the created user details for valid
+      boundary values.
+    notes: Ensure that age is specified exactly at 0 and 129 to verify boundary handling.
+  post_batch_error_handling:
+    description: Send a POST request to the /batch endpoint with an incomplete user
+      object in the array, missing required fields such as address or contact details.
+    expectations: The API should return a 422 Validation Error indicating which fields
+      are missing or incorrect.
+    notes: Include at least one user object with missing 'address' or 'contact' to
+      trigger validation errors. Check the error message for specific details about
+      missing fields.
+  post_batch_happy_path:
+    description: 'Create multiple users in a batch by sending a single POST request
+      to the /batch endpoint with a valid array of user objects in the payload. Each
+      user object must contain the required fields: name, age, address, and contact.
+      Address should include street, city, state, and zip_code. Contact should have
+      an email and optionally a phone.'
+    expectations: The API should return 200 OK with an array of user objects, each
+      including an 'id', indicating successful creation.
+    notes: Ensure that all fields adhere to requirements, such as age being an integer
+      in the specified range and email format being valid.
+  post_batch_schema_validation:
+    description: Send a POST request to the /batch endpoint with a user object containing
+      an incorrectly formatted email address in the contact information.
+    expectations: The API should return a 422 Validation Error due to schema validation
+      failure for the email format.
+    notes: Use an invalid email format like 'user@com' without a top-level domain
+      to test email validation.
+  post_login_userid_profile_boundary_value:
+    description: Create a user and use the `/login/{user_id}/profile` endpoint with
+      a `user_id` at the limit of expected length. For example, if IDs are strings,
+      use a string of maximum length permitted by the database.
+    expectations: 200 OK with correct user profile in response.
+    notes: Ensure system supports user IDs at boundary length. Check response includes
+      correctly formatted user data.
+  post_login_userid_profile_error_handling:
+    description: Use an invalid `user_id` in the `/login/{user_id}/profile` request,
+      such as a non-existent ID. Set up involves ensuring no user exists with the
+      chosen `user_id`.
+    expectations: 422 Validation Error, indicating invalid user ID.
+    notes: No available user should have the `user_id` used in the request. Check
+      the error message for clarity and correctness.
+  post_login_userid_profile_happy_path:
+    description: Create a user using the `/users` endpoint with required fields (name,
+      age, address, contact), and then use the obtained user_id to call the `/login/{user_id}/profile`
+      endpoint, ensuring the user profile is correctly retrieved.
+    expectations: 200 OK with user profile information in the response.
+    notes: Ensure the `user_id` used is from a successfully created user, and verify
+      that each field in the response is correct according to the User schema.
+  post_login_userid_profile_schema_validation:
+    description: Call the `/login/{user_id}/profile` with a correctly formed request
+      but validate the structure and types of the returned data match the User schema
+      exactly as defined in the OpenAPI spec.
+    expectations: 200 OK with correct data types and structures in the response payload.
+    notes: Carefully parse and validate each element of the response based on the
+      JSON schema defined for a User.
+  post_users_boundary_value:
+    description: Test the boundary values for the 'age' field by sending a POST request
+      with 'age' set exactly to 0 or 130 to see if it is rejected because the limits
+      are exclusive.
+    expectations: The API should return a 422 Validation Error for 'age' being exactly
+      0 or 130, as these values are at the exclusive boundaries.
+    notes: Ensure the request body is otherwise valid and only the 'age' value is
+      tested for boundary limits.
+  post_users_create_and_delete:
+    description: First, create a new user with a valid request to the '/users' endpoint,
+      capturing the returned 'id'. Then attempt to use this 'id' to call the '/users/{user_id}/delete'
+      endpoint to delete the user.
+    expectations: The initial POST request should return 200 OK with user details,
+      and the DELETE request should return 204 No Content.
+    notes: Capture the 'id' from the creation step for use in the delete request.
+      Ensure coherence between creation and deletion to prevent test artifacts.
+  post_users_error_handling:
+    description: 'Attempt to create a new user by sending a POST request to the ''/users''
+      endpoint with an invalid JSON object: missing ''name'' field and ''age'' set
+      to a negative number.'
+    expectations: The API should return a 422 Validation Error due to the missing
+      required 'name' field and invalid 'age'.
+    notes: Focus on validation of required fields and appropriate data types. No authentication
+      is required for this endpoint.
+  post_users_happy_path:
+    description: Create a new user by sending a POST request to the '/users' endpoint.
+      The request body should contain valid 'name', 'age', 'address', and 'contact'
+      fields as per the CreateUserRequest schema.
+    expectations: The API should return a 200 OK response with the user's details
+      in the response body, including a new 'id'.
+    notes: Ensure that the 'age' is within the exclusive limits (0 and 130) and all
+      required fields are supplied as per the schema.
+  post_users_schema_validation:
+    description: Send a POST request to the '/users' endpoint with an additional unexpected
+      field in the JSON body to see if the schema validation correctly ignores it
+      or causes an error.
+    expectations: The API should return a 200 OK if extra fields are ignored, or a
+      422 Validation Error if the extra field causes an issue.
+    notes: The schema should handle unexpected fields gracefully, adhering to the
+      robustness principle (be conservative in what you send, liberal in what you
+      accept).
+  post_users_user_id_tags_boundary_value:
+    description: Create a user and capture the user_id. Call POST /users/{user_id}/tags
+      with exactly 1,000 tags to test the boundary size of tag handling (e.g., ['tag1',
+      'tag2', ..., 'tag1000']).
+    expectations: A 200 OK response with the user object, if the system can handle
+      1,000 tags successfully.
+    notes: The boundary value test determines if there's a limit to the number of
+      tags.
+  post_users_user_id_tags_error_handling:
+    description: Create a user by calling the POST /users endpoint. Attempt to call
+      POST /users/{user_id}/tags with an empty 'tags' field ({}).
+    expectations: A 422 Validation Error response, indicating that the tags field
+      is required.
+    notes: The user_id must be valid, but the tags field is intentionally left empty
+      to trigger a validation error.
+  post_users_user_id_tags_happy_path:
+    description: Create a user by calling the POST /users endpoint with valid data.
+      Capture the user's ID from the response. Use this user_id to call the POST /users/{user_id}/tags
+      endpoint with a valid 'tags' array (e.g., ['developer', 'admin']).
+    expectations: A 200 OK response with the user object, showing the newly added
+      tags.
+    notes: Ensure the user ID exists and is valid before making the tags request.
+  post_users_user_id_tags_schema_validation:
+    description: Create a user and capture the user_id. Call POST /users/{user_id}/tags
+      with a valid 'tags' array, but include an invalid data type (integer instead
+      of string) for one of the tags (e.g., ['validTag', 123]).
+    expectations: A 422 Validation Error response, indicating a type mismatch for
+      the tags field.
+    notes: Ensure the request body purposely violates the schema definition by including
+      an invalid type.
+  put_users_user_id_authentication:
+    description: Since authentication is not specified directly in the OpenAPI spec
+      for this endpoint, such tests are not applicable.
+    expectations: N/A
+    notes: The OpenAPI spec does not define authentication requirements for this endpoint,
+      so this test scenario is not applicable.
+  put_users_user_id_boundary_value:
+    description: "Use the PUT /users/{user_id} endpoint to update a user\u2019s age\
+      \ to the edge boundary values defined in the schema, such as 0 or just under\
+      \ 130."
+    expectations: The API should return 200 OK for valid boundary values, and a 422
+      Validation Error for values outside the specified range.
+    notes: When testing boundary values, use the exclusiveMinimum and exclusiveMaximum
+      constraints provided in the schema.
+  put_users_user_id_error_handling:
+    description: Attempt to update a user using the PUT /users/{user_id} endpoint
+      with invalid data, such as an invalid email format or missing required fields
+      in the address object.
+    expectations: The API should return 422 Validation Error indicating what fields
+      are invalid.
+    notes: Focus on providing invalid field types and missing required fields according
+      to the UpdateUserRequest schema.
+  put_users_user_id_happy_path:
+    description: First, create a user using the POST /users endpoint with valid data
+      to obtain a user ID. Then, use the PUT /users/{user_id} endpoint to update this
+      user's details, such as name and age, with valid data.
+    expectations: The API should return 200 OK with the updated user details.
+    notes: Make sure to replace {user_id} with the actual ID obtained from the creation
+      step. This is a happy path test, so ensure all provided data is valid and well-formed.
+  put_users_user_id_schema_validation:
+    description: Update a user using the PUT /users/{user_id} endpoint by providing
+      a payload that exactly conforms to the UpdateUserRequest schema, including optional
+      fields as null if not used.
+    expectations: The API should return 200 OK with no validation errors when optional
+      fields are explicitly set to null.
+    notes: Test with the optional fields set to null, ensuring the request is still
+      valid per JSON schema.

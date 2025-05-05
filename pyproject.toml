@@ -4,12 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "api-ninja"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "API Testing Framework to automate API testing using LLM Agents"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "allure-pytest>=2.14.1",
     "openai-agents>=0.0.14",
     "openai>=1.76.0",
     "pytest>=8.3.5",
@@ -17,6 +16,7 @@ dependencies = [
     "requests>=2.32.3",
     "pydantic>=2.11.4",
     "rich>=14.0.0",
+    "pytest-sugar>=1.0.0",
 ]
 
 [dependency-groups]
@@ -26,14 +26,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourorg/api-ninja"
+Homepage = "https://github.com/ssilwal29/api_ninja"
 
 [project.entry-points."pytest11"]
 api_ninja = "api_ninja.plugin"
-
-[tool.uv.sources]
-api-ninja = { path = "./src/foo" }
-# api-ninja = { workspace = true }
-
-# [tool.uv.workspace]
-# members = ["src/*"]

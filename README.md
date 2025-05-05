@@ -19,9 +19,10 @@ API Ninja simplifies API testing by allowing users to define test flows in plain
 
 ### 1. Define Flows in Plain English
 
-Write test flows in a YAML file, describing the steps and expectations in plain English. For example:
+Write test flows in a YAML file, describing the steps and expectations in plain English. Check demo/ for more examples. For example:
 
 ```yaml
+defaults:
 collections:
   user_endpoints:
     description: User-related API flows
@@ -55,7 +56,7 @@ API Ninja will:
 
 Run the following command to execute the flows:
 ```
-uv run pytest -c flows.yaml
+uv run pytest --config flows.yaml
 ```
 
 ---
@@ -69,73 +70,26 @@ API Ninja can automatically generate test flows for common scenarios based on an
 
 Run the following command to generate flows:
 ```
-uv run -m api_ninja.cli generate-flows --url http://localhost:8000/openapi.json --out generated_flows.yaml
+uv run -m api_ninja.cli generate-flows --url <url-to-openapi-json-spec> --out <path-of-the-out-file>
 ```
 
 ---
 
 ## Installation
 
-1. Clone the repository:
+1. Instal using pip:
    ```
-   git clone https://github.com/yourorg/api-ninja.git
-   cd api-ninja
-   ```
-
-2. Create a virtual environment and activate it:
-   ```
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
+   pip install api-ninja
    ```
 
 ---
 
-## Usage
+## Contributing
 
-### Define Your Test Flows
-
-Create a YAML file (e.g., `flows.yaml`) to define your test flows in plain English. For example:
-
-```yaml
-user_management_flow:
-  description: Test user creation, retrieval, and deletion.
-  expectations: All steps should return 2xx status codes.
-  steps:
-    - POST /users with valid payload
-    - GET /users/{user_id} to retrieve the created user
-    - DELETE /users/{user_id} to delete the user
-```
-
-### Run the Test Flows
-
-Execute the test flows using the CLI:
-```
-uv run -m api_ninja.cli run-all --config config.yaml
-```
-
-### Generate Flows from OpenAPI Spec
-
-Automatically generate test flows for your API:
-```
-uv run -m api_ninja.cli generate-flows --url http://localhost:8000/openapi.json --out generated_flows.yaml
-```
-
----
-
-## Testing 
-
-API Ninja integrates with Allure for detailed test reporting. To generate and view reports:
-1. Run tests with Allure:
-   ```
-   uv run pytest -c flows.yaml
-   ```
-
----
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a feature branch.
+3. Submit a pull request.
 
 ## Development
 
@@ -151,15 +105,6 @@ uv run black .
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a pull request.
-
----
-
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
@@ -168,4 +113,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contact
 
-For questions or support, please contact your-email@example.com.
+For questions or support, please contact ssilwal29@gmail.com
