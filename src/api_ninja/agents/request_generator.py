@@ -1,7 +1,10 @@
+import os
 import asyncio
 import json
 from api_ninja.models import ApiCallModel
 from agents import Agent, Runner
+
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
 
 
 class RequestGeneratorAgent:
@@ -75,6 +78,7 @@ class RequestGeneratorAgent:
         )
         prompt = self.prompt(step, context, openapi_spec, payload_schema)
         agent = Agent(
+            model=LLM_MODEL,
             name="API Request Agent",
             instructions=prompt,
             output_type=str,

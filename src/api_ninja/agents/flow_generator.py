@@ -1,8 +1,11 @@
+import os
 import asyncio
 import json
 from typing import List
 from agents import Agent, Runner
 from api_ninja.models import FlowModel
+
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
 
 
 class FlowGeneratorAgent:
@@ -64,6 +67,7 @@ Constraints:
     ) -> List[FlowModel]:
         instructions = self.prompt(method, path, openapi_spec)
         agent = Agent(
+            model=LLM_MODEL,
             name=f"Flow Generator for {method} {path}",
             instructions=instructions,
             output_type=List[FlowModel],

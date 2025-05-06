@@ -1,6 +1,7 @@
 # API Ninja
 
 API Ninja simplifies API testing by allowing users to define test flows in plain English. The framework dynamically generates and executes test steps based on user-defined flows or OpenAPI specifications with a LLM. It validates API responses against expectations and ensures that APIs behave as intended. API Ninja currently only supports OpenAI API and uses it in generating steps, payloads, headers, and other dynamic components.
+> **Note:** This alpha version supports only basic JSON requests (`GET`, `POST`, `PUT`, `DELETE`). File uploads via `multipart/form-data` are not yet supported.
 
 ---
 
@@ -13,9 +14,28 @@ API Ninja simplifies API testing by allowing users to define test flows in plain
 - **Result Evaluation**: Checks API responses for correctness, schema validation, and status codes.
 - **Reporting**: Integrates with pytest for detailed test execution.
 
+
 ---
 
-## How It Works
+## Installation
+
+Install via pip:
+
+```bash
+pip install api-ninja
+```
+
+Or install from source using `uv`:
+
+```bash
+git clone https://github.com/ssilwal29/api-ninja.git
+cd api-ninja
+uv pip install -e .
+```
+
+---
+
+## Quick Start
 
 ### 1. Define Flows in Plain English
 
@@ -23,6 +43,8 @@ Write test flows in a YAML file, describing the steps and expectations in plain 
 
 ```yaml
 defaults:
+- some default behavior across all the collections
+
 collections:
   user_endpoints:
     description: User-related API flows
@@ -56,7 +78,7 @@ API Ninja will:
 
 Run the following command to execute the flows:
 ```
-uv run pytest --config flows.yaml
+uv pytest --config flows.yaml --openapi-spec-url <url-to-openapi-spec> --base-url <api-base-url>
 ```
 
 ---
@@ -67,6 +89,8 @@ API Ninja can automatically generate test flows for common scenarios based on an
 - **Happy Path**: Ensures endpoints work as expected with valid inputs.
 - **Error Handling**: Tests how endpoints handle invalid inputs or missing data.
 - **Boundary Values**: Tests edge cases for input parameters.
+- **Authentication**: Tests cases related to authentication accessing the endpoint
+- **Schema Validation**: Ensures the request and response schema are valid and expected as defined
 
 Run the following command to generate flows:
 ```
@@ -75,39 +99,58 @@ uv run -m api_ninja.cli generate-flows --url <url-to-openapi-json-spec> --out <p
 
 ---
 
-## Installation
+## Roadmap
 
-1. Instal using pip:
-   ```
-   pip install api-ninja
-   ```
+- [x] YAML-based test flow definition
+- [x] Flow generation via OpenAPI + LLM
+- [x] Variable extraction and chaining
+- [x] Pytest-based execution
+- [x] Docker support
+- [ ] Support additional HTTP methods and payload types
+- [ ] Looping and conditional logic in flows
+- [ ] Checkpointing for generated and verified flows
+- [ ] Filter and run specific flows/collections
+- [ ] Visual test result analytics
+- [ ] Web-based UI for authoring and managing flows
+- [ ] Git metadata tracking for traceability
+- [ ] Support for multiple LLM providers
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a pull request.
-
 ## Development
 
-### Linting
-```
+### Lint
+
+```bash
 uv run ruff check .
 ```
 
-### Formatting
-```
+### Format
+
+```bash
 uv run black .
 ```
 
 ---
 
+## Contributing
+
+Contributions are welcome!
+
+1. Fork the repo
+2. Create a feature branch
+3. Submit a PR with a clear description
+
+Have an idea or suggestion? Open an issue or start a discussion.
+
+**Found a bug? Want to request a feature or ask a question?**  
+Please create an issue on [GitHub](https://github.com/ssilwal29/api-ninja/issues).
+
+---
+
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 ---
 

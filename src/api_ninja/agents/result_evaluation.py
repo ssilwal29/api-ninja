@@ -1,7 +1,10 @@
+import os
 import asyncio
 import json
 from agents import Agent, Runner
 from api_ninja.models import EvaluationResult
+
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
 
 
 class ResultEvaluationAgent:
@@ -75,6 +78,7 @@ class ResultEvaluationAgent:
     def run(self, context: str, result: dict = {}) -> EvaluationResult:
         prompt = self.prompt(context, result)
         agent = Agent(
+            model=LLM_MODEL,
             name="API Evaluator",
             instructions=prompt,
             output_type=EvaluationResult,

@@ -1,7 +1,10 @@
+import os
 import asyncio
 import json
 from agents import Agent, Runner
 from api_ninja.models import ApiCallModel, GoalModel
+
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
 
 
 class PlannerAgent:
@@ -57,7 +60,10 @@ class PlannerAgent:
     def run(self, context: str, openapi_spec: dict = {}) -> list[ApiCallModel]:
         prompt = self.prompt(context, openapi_spec)
         agent = Agent(
-            name="API Call Planner", instructions=prompt, output_type=GoalModel
+            model=LLM_MODEL,
+            name="API Call Planner",
+            instructions=prompt,
+            output_type=GoalModel,
         )
         result = asyncio.run(
             Runner.run(
