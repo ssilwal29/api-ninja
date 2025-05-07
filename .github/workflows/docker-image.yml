@@ -2,13 +2,20 @@ name: Docker Image CI
 
 on:
   release:
-    types: [published]
+    types: [published]  # Only trigger when a GitHub release is published
+
+permissions:
+  contents: read
+  packages: write  # Required to push to GHCR
+  id-token: write  # Recommended for future authentication options
 
 jobs:
   push-to-ghcr:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -17,11 +24,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        env:
-          IMAGE_NAME: ghcr.io/${{ github.repository }}
-          VERSION_TAG: ${{ github.ref_name }}
+      - name: Set up image tags
+        id: meta
         run: |
-          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:$VERSION_TAG .
-          docker push $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:$VERSION_TAG
+          IMAGE_NAME="ghcr.io/${{ github.repository }}"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ steps.meta.outputs.IMAGE_NAME }}:latest \
+                       -t ${{ steps.meta.outputs.IMAGE_NAME }}:${{ steps.meta.outputs.VERSION_TAG }} .
+
+      - name: Push Docker image to GHCR
+        run: |
+          docker push ${{ steps.meta.outputs.IMAGE_NAME }}:latest
+          docker push ${{ steps.meta.outputs.IMAGE_NAME }}:${{ steps.meta.outputs.VERSION_TAG }}
