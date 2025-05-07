@@ -9,7 +9,7 @@ COPY . /app
 # Install the application dependencies.
 WORKDIR /app
 RUN uv venv
-RUN uv sync --locked
+RUN uv sync --frozen
 RUN chmod +x run.sh
 
 ENTRYPOINT ["./run.sh"]
