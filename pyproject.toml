@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "api-test-ninja"
-version = "1.0.9"
+version = "1.0.10"
 description = "API Testing Framework to automate and simplify API testing using LLM Agents and tests defined in plain English."
 readme = "README.md"
 requires-python = ">=3.11"
