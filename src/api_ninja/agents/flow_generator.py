@@ -269,8 +269,8 @@ class FlowGeneratorAgent:
                 collection_name = method.lower() + path.replace("/", "_").replace("{", "").replace(
                     "}", ""
                 )
-                if path != "/users/{user_id}":
-                    continue
+                # if path != "/users/{user_id}":
+                #     continue
                 if method.lower() not in ["get", "post", "put", "patch", "delete"]:
                     continue
                 print(f"Generating flows for {method.upper()} {path}...")

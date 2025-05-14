@@ -14,7 +14,6 @@ API Ninja simplifies API testing by allowing users to define test flows in plain
 - **Result Evaluation**: Checks API responses for correctness, schema validation, and status codes.
 - **Reporting**: Integrates with pytest for detailed test execution.
 
-
 ---
 
 ## Installation
@@ -194,6 +193,7 @@ docker run --rm \
 - [x] Variable extraction and chaining
 - [x] Pytest-based execution
 - [x] Docker support
+- [x] Self correcting Flow generation
 - [ ] Support additional HTTP methods and payload types
 - [ ] Looping and conditional logic in flows
 - [ ] Checkpointing for generated and verified flows
@@ -233,6 +233,24 @@ Have an idea or suggestion? Open an issue or start a discussion.
 
 **Found a bug? Want to request a feature or ask a question?**  
 Please create an issue on [GitHub](https://github.com/ssilwal29/api-ninja/issues).
+
+---
+
+## Screenshots
+
+Below are some screenshots showcasing the functionality of API Ninja:
+
+- **Executing Flows with Pytest**: This screenshot demonstrates how test flows are executed using Pytest, providing detailed output for each step.
+  ![Executing Flows with Pytest](assets/pytest-output.png)
+
+- **Executing Flows in Command Line**: This screenshot shows the command-line interface in action, running API Ninja flows with clear and concise output.
+  ![Executing Flows in command line](assets/cli-output.png)
+
+- **Generating Flows for OpenAPI Spec**: This screenshot highlights the process of generating test flows automatically from an OpenAPI specification.
+  ![Generating Flows for OpenAPI Spec](assets/flow-output.png)
+
+- **Generated Flows Sample**: The output yaml file
+  ![Generating Flows for OpenAPI Spec](assets/flow-sample.png)
 
 ---
 
