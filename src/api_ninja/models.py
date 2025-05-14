@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class ApiCallModel(BaseModel):
@@ -19,9 +20,7 @@ class GoalModel(BaseModel):
 class EvaluationResult(BaseModel):
     status: str = Field(..., description="PASS or FAIL")
     reason: str = Field(..., description="Why the test passed or failed")
-    suggestion: Optional[str] = Field(
-        None, description="How to fix the issue if failed"
-    )
+    suggestion: Optional[str] = Field(None, description="How to fix the issue if failed")
 
 
 class FlowModel(BaseModel):

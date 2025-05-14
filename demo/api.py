@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException, Query, Depends, Header
-from fastapi.responses import Response
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Dict, Optional, Annotated
+from typing import Annotated, Dict, List, Optional
 from uuid import uuid4
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel, EmailStr, Field
 
 app = FastAPI()
 

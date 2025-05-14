@@ -4,31 +4,18 @@ build-backend = "hatchling.build"
 
 [project]
 name = "api-test-ninja"
-version = "1.0.7"
-description = "API Testing Framework to automate and simplify API testing using LLM Agents and test defined in plain English."
+version = "1.0.8"
+description = "API Testing Framework to automate and simplify API testing using LLM Agents and tests defined in plain English."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-authors = [
-  {name = "Sajan Silwal", email = "silwalsajan@gmail.com"}
-]
-maintainers = [
-  {name = "Sajan Silwal", email = "silwalsajan@gmail.com"}
-]
+authors = [{name = "Sajan Silwal", email = "silwalsajan@gmail.com"}]
+maintainers = [{name = "Sajan Silwal", email = "silwalsajan@gmail.com"}]
 
 keywords = [
-  "api-testing",
-  "testing-framework",
-  "rest api testing",
-  "openapi testing",
-  "llm testing",
-  "openai api testing",
-  "test automation",
-  "test api",
-  "api validation",
-  "integration testing",
-  "testing",
-  "pytest api testing"
+  "api-testing", "testing-framework", "rest api testing", "openapi testing",
+  "llm testing", "openai api testing", "test automation", "test api",
+  "api validation", "integration testing", "testing", "pytest api testing"
 ]
 
 classifiers = [
@@ -42,22 +29,23 @@ classifiers = [
 ]
 
 dependencies = [
-    "openai-agents>=0.0.14",
-    "openai>=1.76.0",
-    "pytest>=8.3.5",
-    "pyyaml>=6.0.2",
-    "requests>=2.32.3",
-    "pydantic>=2.11.4",
-    "rich>=14.0.0",
-    "pytest-sugar>=1.0.0",
-    "pytest-xdist>=3.6.1",
-    "pytest-md-report>=0.7.0",
+  "openai-agents>=0.0.14",
+  "openai>=1.76.0",
+  "pytest>=8.3.5",
+  "pyyaml>=6.0.2",
+  "requests>=2.32.3",
+  "pydantic>=2.11.4",
+  "rich>=14.0.0",
+  "pytest-sugar>=1.0.0",
+  "pytest-xdist>=3.6.1",
+  "pytest-md-report>=0.7.0",
+  "ragas>=0.2.15"
 ]
 
 [dependency-groups]
 dev = [
-    "black>=25.1.0",
-    "ruff>=0.11.7",
+  "black>=25.1.0",
+  "ruff>=0.4.3"
 ]
 
 [project.entry-points."pytest11"]
@@ -74,5 +62,32 @@ Repository = "https://github.com/ssilwal29/api-ninja"
 Changelog = "https://github.com/ssilwal29/api-ninja/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-only-include = ["src/api_ninja"]
 sources = ["src"]
+only-include = ["src/api_ninja"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+log_cli = true
+log_cli_level = "INFO"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = '\.pyi?$'
+skip-string-normalization = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

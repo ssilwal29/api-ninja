@@ -1,23 +1,25 @@
 import json
+import logging
 import sys
 import time
-import yaml
-import logging
+from io import StringIO
+
 import click
 import requests
-from io import StringIO
+import yaml
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.progress import (
-    Progress,
     BarColumn,
+    Progress,
+    SpinnerColumn,
     TextColumn,
     TimeElapsedColumn,
-    SpinnerColumn,
 )
-from api_ninja.core import APINinja
+from rich.table import Table
+
 from api_ninja.agents.flow_generator import FlowGeneratorAgent
+from api_ninja.core import APINinja
 
 console = Console()
 
@@ -68,9 +70,7 @@ def cli(ctx):
 @click.pass_context
 def run_all(ctx, config, openapi_spec_url, openapi_spec_path, base_url):
     if not openapi_spec_url and not openapi_spec_path:
-        raise click.UsageError(
-            "Either --openapi-spec-url or --openapi-spec-path must be provided"
-        )
+        raise click.UsageError("Either --openapi-spec-url or --openapi-spec-path must be provided")
     if not base_url:
         raise click.UsageError("Base URL must be provided using --base-url")
     cfg = load_config(config)
@@ -110,26 +110,25 @@ def run_all(ctx, config, openapi_spec_url, openapi_spec_path, base_url):
         completed = 0
         for flow_id, flow in flows:
             # update spinner description
-            progress.update(
-                task, description=f"{flow_id}", completed=completed, refresh=True
-            )
+            progress.update(task, description=f"{flow_id}", completed=completed, refresh=True)
 
             # capture stdout from plan_and_run
             buf = StringIO()
             old_stdout = sys.stdout
             sys.stdout = buf
 
+            error_msg = None
             try:
                 ninja.plan_and_run(flow)
                 success = True
             except AssertionError as e:
+                error_msg = str(e)
                 success = False
-                buf.write(f"\n✖ Step failed: {e}\n")
             finally:
                 sys.stdout = old_stdout
 
             # render panel
-            output = buf.getvalue().rstrip() or "[dim]— no output —[/dim]"
+            output = buf.getvalue().rstrip() or error_msg or "[dim]— Success —[/dim]"
             title = f"🧪 {flow_id}  {'✅' if success else '❌'}"
             panel = Panel(
                 f"\n{output}\n",
@@ -164,11 +163,16 @@ def run_all(ctx, config, openapi_spec_url, openapi_spec_path, base_url):
         sys.exit(1)
 
 
+class LiteralDumper(yaml.SafeDumper):
+    def represent_scalar(self, tag, value, style=None):
+        if isinstance(value, str) and "\n" in value:
+            style = "|"
+        return super().represent_scalar(tag, value, style)
+
+
 @cli.command("generate-flows")
 @click.option("--url", help="URL to fetch OpenAPI spec from")
-@click.option(
-    "--path", type=click.Path(exists=True), help="Path to local OpenAPI JSON/YAML file"
-)
+@click.option("--path", type=click.Path(exists=True), help="Path to local OpenAPI JSON/YAML file")
 @click.option(
     "--out",
     type=click.Path(),
@@ -198,7 +202,15 @@ def generate_flows(ctx, url, path, out):
     flows = agent.generate_flows_for_spec(openapi_spec)
     print(f"Writing generated flows to {out}...")
     with open(out, "w") as f:
-        yaml.dump(flows, f, indent=2)
+        yaml.dump(
+            flows,
+            f,
+            Dumper=LiteralDumper,
+            sort_keys=False,
+            allow_unicode=True,
+            indent=2,
+            width=1000,  # Avoid line-wrapping
+        )
 
     print("✅ Done.")
 

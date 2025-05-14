@@ -1,7 +1,9 @@
-import os
 import asyncio
 import json
+import os
+
 from agents import Agent, Runner
+
 from api_ninja.models import ApiCallModel, GoalModel
 
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")

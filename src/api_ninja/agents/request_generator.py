@@ -1,8 +1,10 @@
-import os
 import asyncio
 import json
-from api_ninja.models import ApiCallModel
+import os
+
 from agents import Agent, Runner
+
+from api_ninja.models import ApiCallModel
 
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
 
@@ -27,23 +29,21 @@ class RequestGeneratorAgent:
         2. The request description,
         3. The provided context (variables, background info, goal, expected result).
 
-        ### 🧠 Context:
+        ### Context:
         {context}
 
         ---
-
-        ### 📘 OpenAPI Specification:
+        ### OpenAPI Specification:
         {json.dumps(openapi_spec)}
 
-        ### 📝 Request Details:
+        ### Request Details:
         - Method: {step.method}
         - Path: {step.path}
         - Payload Description: {step.payload_description}
         - Headers Description: {step.headers_description}
 
         ---
-
-        ### 🔧 Instructions:
+        ### Instructions:
         - Use the OpenAPI spec as the **primary source of truth** for required fields, types, and parameter locations.
         - Always generate a valid payload, params, etc unless you are expplicitly told not to.
         - Use the **context to resolve all dynamic values** in `path`, `parameters`, and `headers`. Replace placeholders like `/users/{{{{user_id}}}}` with actual values (e.g., `/users/1234`).
@@ -56,7 +56,7 @@ class RequestGeneratorAgent:
         The expected output schema is as follows:
         {json.dumps(schema)}
 
-        ### ✅ Output JSON Format:
+        ### Output JSON Format:
         {{{{  
         "method": "GET" | "POST" | "PUT" | "DELETE",
         "path": "/resolved/endpoint/with/actual/values",
@@ -70,12 +70,8 @@ class RequestGeneratorAgent:
 
         return prompt
 
-    def run(
-        self, step: ApiCallModel, context: str = "", openapi_spec: dict = {}
-    ) -> dict:
-        payload_schema = (
-            get_request_body_schema(openapi_spec, step.path, step.method) or ""
-        )
+    def run(self, step: ApiCallModel, context: str = "", openapi_spec: dict = {}) -> dict:
+        payload_schema = get_request_body_schema(openapi_spec, step.path, step.method) or ""
         prompt = self.prompt(step, context, openapi_spec, payload_schema)
         agent = Agent(
             model=LLM_MODEL,

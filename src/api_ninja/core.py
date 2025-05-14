@@ -1,36 +1,50 @@
-import logging
 import json
-import requests
-from api_ninja.memory_store import MemoryStore
-from openai import OpenAI
-from api_ninja.agents.request_generator import RequestGeneratorAgent
-from api_ninja.agents.planner import PlannerAgent
-from api_ninja.agents.result_evaluation import ResultEvaluationAgent
+import logging
 from urllib.parse import urljoin
 
+import requests
+from openai import OpenAI
+
+from api_ninja.agents.planner import PlannerAgent
+from api_ninja.agents.request_generator import RequestGeneratorAgent
+from api_ninja.agents.result_evaluation import ResultEvaluationAgent
+from api_ninja.color import Colors
+from api_ninja.memory_store import MemoryStore
 
 logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
 def format_context(flow: dict) -> str:
-    return f"""Flow ID: {flow.get('flow_id')}
+    text = f"""
+        Flow ID: {flow.get("flow_id")}
+        Collection: {flow.get("collection")}
+        Collection Description: {flow.get("collection_description")}
 
-Collection: {flow.get('collection')}
-Collection Description: {flow.get('collection_description')}
+        Description:
+        {flow.get("description", "")}
 
-Description:
-{flow.get('description', '')}
+        Notes:
+        {flow.get("notes", "")}
 
-Notes:
-{flow.get('notes', '')}
+        Expectations:
+        {flow.get("expectations", "")}
 
-Expectations:
-{flow.get('expectations', '')}
+        Defaults:
+        {json.dumps(flow.get("defaults", []), indent=2)}
+    """
+    return text.strip()
 
-Defaults:
-{json.dumps(flow.get('defaults', []), indent=2)}
-"""
+
+def format_plans(plans):
+    lines = []
+    for i, plan in enumerate(plans, 1):
+        lines.append(f"    {Colors.CYAN}{i}. {plan.method.upper():<6} {plan.path}{Colors.RESET}")
+        lines.append(f"       • Payload     : {plan.payload_description}")
+        lines.append(f"       • Headers     : {plan.headers_description}")
+        lines.append(f"       • Expectation : {plan.response_check}")
+    return "\n".join(lines)
 
 
 class APINinja:
@@ -56,9 +70,6 @@ class APINinja:
         except json.JSONDecodeError:
             if getattr(resp, "text", None) is not None:
                 response_body = resp.text
-        print(
-            f"{request_details['method']} to {url} resulted {resp.status_code} status code."
-        )
         return {
             "response_status": resp.status_code,
             "response_body": response_body,
@@ -74,8 +85,8 @@ class APINinja:
         memory = MemoryStore()
         memory.store(initial_context, label="")
         planned_calls = self.planner_agent.run(memory.get_context(), self.openapi_spec)
-        print(f"Total Steps: {len(planned_calls)}")
         for i, call in enumerate(planned_calls):
+            step_name = f"{call.method.upper()} {call.path}"
             try:
                 request_details = self.request_generator_agent.run(
                     step=call,
@@ -88,12 +99,15 @@ class APINinja:
                 check_result = self.evaluation_agent.run(
                     context=memory.get_context(), result=result
                 )
-                assert (
-                    check_result.status == "PASS"
-                ), f"\nReason: {check_result.reason}\nSuggestion: {check_result.suggestion}"
-                step_name = f"{call.method}_{call.path}".replace("/", "_").lower()
+                if check_result.status != "PASS":
+                    raise AssertionError(
+                        f"  {Colors.YELLOW}Reason     :{Colors.RESET} {check_result.reason.strip()}\n\n"
+                        f" {Colors.YELLOW}Suggestion :{Colors.RESET} {check_result.suggestion.strip()}\n\n"
+                        f" {Colors.YELLOW}Test Plan  :{Colors.RESET}\n{format_plans(planned_calls)}\n"
+                    )
                 memory.store(result["response_body"], label=step_name)
-            except AssertionError as e:
-                assert (
-                    False
-                ), f"Exception {e} while requesting {call.method} to {call.path}."
+            except Exception as e:
+                raise AssertionError(
+                    f"\n{Colors.RED}Step {i + 1} failed during {step_name}\n"
+                    f"{Colors.RESET} {str(e).strip()}"
+                )

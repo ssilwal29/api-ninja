@@ -1,7 +1,9 @@
-import os
 import asyncio
 import json
+import os
+
 from agents import Agent, Runner
+
 from api_ninja.models import EvaluationResult
 
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4.1")
@@ -13,12 +15,10 @@ class ResultEvaluationAgent:
 
         prompt = f"""
             You are an API test evaluator and debugger.
-
             Your job is to analyze the following request, response, and expectations to determine whether the API behavior is correct.
 
             ---
-
-            ### 📤 Request
+            ### Request
             - Method: {result['method']}
             - Path: {result['path']}
 
@@ -30,21 +30,18 @@ class ResultEvaluationAgent:
             {json.dumps(result['parameters'], indent=2)}
 
             ---
-
-            ### 📥 Response
+            ### Response
             - Status Code: {result['response_status']}
             - Body:
             {json.dumps(result['response_body'], indent=2)}
 
             ---
-
-            ### ✅ Expectations
+            ### Expectations
             - Expected Status Code: {result['expected_status']}
             - Response Check: {result['response_check']}
 
             ---
-
-            ### 🧠 Evaluation Task
+            ### Evaluation Task
 
             You must:
             1. Determine whether the status code matches the expected status.
@@ -54,8 +51,7 @@ class ResultEvaluationAgent:
             5. Make sure you understand the context of the API call. There could be negative scenarios where the API should return an error code. In that case, you should not suggest to fix it.
 
             ---
-
-            ### 🎯 Output Format (required)
+            ### Output Format (required)
 
             Return ONLY a structured object with the following fields:
 
@@ -64,9 +60,7 @@ class ResultEvaluationAgent:
             - suggestion: a suggested fix or diagnostic step (or null if not needed)
 
             ---
-
-            ### 💡 Example:
-
+            ### Example:
             {{
             "status": "FAIL",
             "reason": "Response code was 401 instead of 200. Missing authentication header.",

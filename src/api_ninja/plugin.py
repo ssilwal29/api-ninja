@@ -1,10 +1,47 @@
-import pathlib
+import logging
 import os
-import pytest
-import yaml
-import requests
+import pathlib
+import sys
 
+import pytest
+import requests
+import yaml
+
+from api_ninja.color import Colors
 from api_ninja.core import APINinja
+
+NOISY_LOGGERS = [
+    "httpx",
+    "httpcore",
+    "openai",
+    "openai._base_client",
+    "uvicorn",
+]
+
+
+def _silence_noisy_loggers():
+    for logger_name in NOISY_LOGGERS:
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(logging.WARNING)
+
+
+# Optional: Setup APINinja logger to go to stdout cleanly
+def _setup_apininja_logger():
+    logger = logging.getLogger("APINinja")
+    logger.setLevel(logging.INFO)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter("[APINinja] %(message)s"))
+
+    # Avoid duplicate handlers
+    if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
+        logger.addHandler(handler)
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config):
+    _silence_noisy_loggers()
+    _setup_apininja_logger()
 
 
 def pytest_addoption(parser):
@@ -61,14 +98,9 @@ class APINinjaFile(pytest.File):
         elif openapi_spec_path:
             with open(openapi_spec_path, "r") as f:
                 spec = (
-                    yaml.safe_load(f)
-                    if openapi_spec_path.suffix in (".yaml", ".yml")
-                    else f.read()
+                    yaml.safe_load(f) if openapi_spec_path.suffix in (".yaml", ".yml") else f.read()
                 )
 
-        # Optional OpenAPI fetch
-        # spec_uri = cfg.get("api", {}).get("openapi_spec")
-        # spec = requests.get(spec_uri).json() if spec_uri else {}
         ninja = APINinja(openapi_spec=spec, api_base_url=base_url)
         defaults = cfg.get("defaults", [])
         for coll_name, coll in cfg["collections"].items():
@@ -102,7 +134,7 @@ class APINinjaItem(pytest.Item):
 
     def repr_failure(self, excinfo):
         if excinfo.errisinstance(AssertionError):
-            return f"\n[APINinja] flow {self.name!r} failed:\n" f"  {excinfo.value}\n"
+            return f"{Colors.RED}\nFlow {self.name!r} failed\n" f"  {excinfo.value}\n{Colors.RESET}"
         return super().repr_failure(excinfo)
 
     def reportinfo(self):
