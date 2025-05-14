@@ -1,6 +1,6 @@
 # API Ninja
 
-API Ninja simplifies generation and execution API test flows from plain English descriptions. It uses OpenAPI specifications and LLM to create test steps, generate appropriate request payloads, and extract variables between steps. The tool validates API responses against expected behavior and can generate common test scenarios (happy paths, error cases, boundary tests) from an OpenAPI spec. Currently works with OpenAI's API for its LLM capabilities and Project is in early development.
+API Ninja makes API Testing easier with test flows defined in plain English descriptions. It uses OpenAPI specifications and LLM to create test steps, generate appropriate request payloads, and extract variables between steps. The tool validates API responses against expected behavior and can generate common test scenarios (happy paths, error cases, boundary tests) from an OpenAPI spec. Currently works with OpenAI's API for its LLM capabilities and Project is in early development.
 > **Note:** This alpha version supports only basic JSON requests (`GET`, `POST`, `PUT`, `DELETE`). File uploads via `multipart/form-data` are not yet supported.
 
 ---
